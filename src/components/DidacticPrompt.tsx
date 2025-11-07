@@ -1,0 +1,25 @@
+import type { FC } from "react";
+
+type Props = {
+  value: string;
+  setValue: (value: string) => void;
+};
+
+const DidacticPrompt: FC<Props> = ({ value, setValue }) => {
+  return (
+    <div>
+      <p className="text-sm text-gray-600 mb-2">
+        💡 Ejemplo: “¿Qué cuidados necesita un cachorro de 2 meses?”
+      </p>
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Escribí tu consulta aquí..."
+        className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-400"
+        rows={4}
+      />
+    </div>
+  );
+};
+
+export default DidacticPrompt;
