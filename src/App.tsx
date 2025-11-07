@@ -1,10 +1,8 @@
-import ClientePrompt from "./components/ClientePrompt";
+import Home from "./pages/Home";
 
 function App() {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <ClientePrompt />
-    </div>
-  );
+  return <Home />;
 }
+
 export default App;
+
