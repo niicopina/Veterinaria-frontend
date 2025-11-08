@@ -3,9 +3,10 @@ import type { FC } from "react";
 type Props = {
   value: string;
   setValue: (value: string) => void;
+  loading: boolean;
 };
 
-const ClientPetPrompt: FC<Props> = ({ value, setValue }) => {
+const ClientPetPrompt: FC<Props> = ({ value, setValue, loading }) => {
   return (
     <div>
       <p className="text-sm text-gray-600 mb-2">
@@ -14,8 +15,9 @@ const ClientPetPrompt: FC<Props> = ({ value, setValue }) => {
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Presentá al cliente y su mascota..."
-        className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-400"
+        disabled={loading}
+        placeholder="..."
+        className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
         rows={4}
       />
     </div>
