@@ -11,61 +11,97 @@ const Home = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [response, setResponse] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [mostrarBoton, setMostrarBoton] = useState<boolean>(false);
 
   const handleSubmit = async () => {
-  if (!prompt.trim()) return;
-    setLoading(true); // empieza la carga
-    setResponse("");  // limpia respuesta anterior
+    if (!prompt.trim()) return;
+    setLoading(true);
+    setResponse("");
 
-  try {
-    const res = await fetch("http://localhost:8000/api/prompt", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ prompt }),
-    });
+    try {
+      const res = await fetch("http://localhost:8000/api/prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
 
-    const data = await res.json();
-    setResponse(data.response);
-  } catch (error) {
-    console.error("Error al enviar el prompt:", error);
-    setResponse("⚠️ Hubo un error al procesar tu consulta.");
-  } finally {
-    setLoading(false); // termina la carga
-  }
+      const data: { response?: string } = await res.json();
+      setResponse(data.response ?? "⚠️ No se pudo generar respuesta.");
 
-};
+      if (data.response?.includes("¿Querés agendar un turno")) {
+        setMostrarBoton(true);
+      } else {
+        setMostrarBoton(false);
+      }
+    } catch (error) {
+      console.error("Error al enviar el prompt:", error);
+      setResponse("⚠️ Hubo un error al procesar tu consulta.");
+      setMostrarBoton(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAgendar = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:8000/api/agendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensaje: prompt }), // podés usar el último mensaje del usuario
+      });
+      const data: { response?: string } = await res.json();
+      setResponse((prev) => prev + "\n\n" + (data.response ?? "⚠️ Error al agendar turno."));
+    } catch (error) {
+      console.error("Error al agendar turno:", error);
+      setResponse((prev) => prev + "\n\n⚠️ Error al agendar turno.");
+    } finally {
+      setLoading(false);
+      setMostrarBoton(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main className="max-w-2xl mx-auto px-4 py-8">
         <PromptSelector selected={selected} setSelected={setSelected} />
         {selected === "didactic" ? (
-          <DidacticPrompt value={prompt} setValue={setPrompt} />
+          <DidacticPrompt value={prompt} setValue={setPrompt} loading={loading} />
         ) : (
-          <ClientPetPrompt value={prompt} setValue={setPrompt} />
+          <ClientPetPrompt value={prompt} setValue={setPrompt} loading={loading} />
         )}
+
         <button
           className={`mt-4 px-6 py-2 rounded transition ${
-          loading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-600 text-white hover:bg-blue-700"
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
           }`}
           onClick={handleSubmit}
           disabled={loading}
-          >
-           {loading ? "Enviando..." : "Enviar"}
+        >
+          {loading ? "Enviando..." : "Enviar"}
         </button>
 
         {loading && (
-        <div className="mt-6 flex flex-col items-center justify-center text-gray-500">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500 mb-2"></div>
-        <span className="text-sm">Generando respuesta...</span>
-        </div>
+          <div className="mt-6 flex flex-col items-center justify-center text-gray-500">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500 mb-2"></div>
+            <span className="text-sm">Generando respuesta...</span>
+          </div>
         )}
+
         <ResponseBox response={response} />
+
+        {mostrarBoton && (
+          <button
+            onClick={handleAgendar}
+            className="mt-4 px-6 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition"
+          >
+            Confirmar turno
+          </button>
+        )}
+
         <Legend />
       </main>
     </div>
